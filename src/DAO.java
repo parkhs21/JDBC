@@ -35,7 +35,7 @@ public class DAO {
             conn = DriverManager.getConnection(url, user, password);
             result = true;
         } catch (Exception e) {
-            System.out.println("연결할 수 없습니다.");
+            System.out.println("데이터베이스에 연결할 수 없습니다.");
             e.printStackTrace();
         }
         return result;
@@ -54,39 +54,41 @@ public class DAO {
 
     public List<EMPLOYEE> getList() {
         List<EMPLOYEE> list = null;
-        String sql = "SELECT * FROM EMPLOYEE";
+        String sql = "SELECT E1.Fname, E1.Ssn, E1.Bdate, E1.Address, E1.Sex, E1.Salary, E2.Fname, D.Dname " +
+                "FROM EMPLOYEE E1 " +
+                "LEFT OUTER JOIN EMPLOYEE E2 ON E1.Super_ssn = E2.Ssn " +
+                "JOIN DEPARTMENT D ON E1.Dno = D.Dnumber";
 
-        if (connect()) {
-            try {
-                stmt = conn.createStatement();
-                if (stmt != null) {
-                    rs = stmt.executeQuery(sql);
+        // DB 연결을 실패시, 프로그램 종료
+        if (!connect()) System.exit(0);
 
-                    list = new ArrayList<EMPLOYEE>();
+        try {
+            stmt = conn.createStatement();
+            if (stmt != null) {
+                rs = stmt.executeQuery(sql);
 
-                    while (rs.next()) {
-                        EMPLOYEE emp = new EMPLOYEE();
-                        emp.setName(rs.getString("Fname"));
-                        emp.setSsn(rs.getString("Ssn"));
-                        emp.setBdate(rs.getDate("Bdate"));
-                        emp.setAddress(rs.getString("Address"));
-                        emp.setSex(rs.getString("Sex"));
-                        emp.setSalary(rs.getDouble("Salary"));
-                        emp.setSupervisor(rs.getString("Super_ssn"));
-                        emp.setDepartment(rs.getString("Dno"));
-                        list.add(emp);
-                    }
+                list = new ArrayList<EMPLOYEE>();
 
-                    this.close();
+                while (rs.next()) {
+                    EMPLOYEE emp = new EMPLOYEE();
+                    emp.setName(rs.getString("E1.Fname"));
+                    emp.setSsn(rs.getString("E1.Ssn"));
+                    emp.setBdate(rs.getDate("E1.Bdate"));
+                    emp.setAddress(rs.getString("E1.Address"));
+                    emp.setSex(rs.getString("E1.Sex"));
+                    emp.setSalary(rs.getDouble("E1.Salary"));
+                    emp.setSupervisor(rs.getString("E2.Fname"));
+                    emp.setDepartment(rs.getString("D.Dname"));
+                    list.add(emp);
                 }
-            } catch (SQLException e) {
-                System.out.println("Statement 객체를 생성할 수 없습니다.");
-                e.printStackTrace();
             }
-        } else {
-            System.out.println("데이터베이스에 연결할 수 없습니다.");
-            System.exit(0);
+        } catch (SQLException e) {
+            System.out.println("Statement 객체를 생성할 수 없습니다.");
+            e.printStackTrace();
+        } finally {
+            this.close();
         }
+
         return list;
     }
 
@@ -100,27 +102,27 @@ public class DAO {
 //            e.printStackTrace();
 //        }
 //    }
-
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    public static void runSQL(Connection conn) throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
-            getResult(stmt);
-        }
-    }
-
-    private static void getResult(Statement stmt) throws SQLException {
-        String sql = "SELECT Fname, Salary FROM EMPLOYEE WHERE sex='M'";
-        String fname;
-        double salary;
-        try (ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                fname = rs.getString(1);
-                salary = rs.getDouble("Salary");
-                System.out.printf("Fname : %s Salary : %f\n", fname, salary);
-            }
-        }
-    }
+//
+//    public Connection getConnection() throws SQLException {
+//        return DriverManager.getConnection(url, user, password);
+//    }
+//
+//    public static void runSQL(Connection conn) throws SQLException {
+//        try (Statement stmt = conn.createStatement()) {
+//            getResult(stmt);
+//        }
+//    }
+//
+//    private static void getResult(Statement stmt) throws SQLException {
+//        String sql = "SELECT Fname, Salary FROM EMPLOYEE WHERE sex='M'";
+//        String fname;
+//        double salary;
+//        try (ResultSet rs = stmt.executeQuery(sql)) {
+//            while (rs.next()) {
+//                fname = rs.getString(1);
+//                salary = rs.getDouble("Salary");
+//                System.out.printf("Fname : %s Salary : %f\n", fname, salary);
+//            }
+//        }
+//    }
 }

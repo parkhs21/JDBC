@@ -38,6 +38,7 @@ public class EMPLOYEE implements Serializable {
     @Override
     public String toString() {
         String result = "EMPLOYEE [";
+
         result += "Name=" + Name + ", ";
         result += "Ssn=" + Ssn + ", ";
         result += "Bdate=" + Bdate + ", ";
@@ -50,4 +51,18 @@ public class EMPLOYEE implements Serializable {
         return result;
     }
 
+    public String[] toArray() {
+        String[] result = new String[8];
+
+        result[0] = Name;
+        result[1] = Ssn;
+        result[2] = Bdate.toString();
+        result[3] = Address;
+        result[4] = Sex;
+        result[5] = String.valueOf(Salary);
+        result[6] = Supervisor;
+        result[7] = Department;
+
+        return result;
+    }
 }

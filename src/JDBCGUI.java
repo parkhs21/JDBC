@@ -1,15 +1,17 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Arrays;
+import java.util.List;
 
-public class JDBCGUI extends JFrame implements ActionListener {
+public class JDBCGUI extends JFrame {
 
     private String[] searchItems = {"Name", "Ssn", "Bdate", "Address", "Sex", "Salary", "Supervisor", "Department"};
     private JCheckBox[] searchCheckBoxes = new JCheckBox[searchItems.length];
 
     private String[][] temp = {};
 
-    private JTextField inputMsg;
 
     public JDBCGUI() {
         setTitle("JDBC GUI");
@@ -17,16 +19,6 @@ public class JDBCGUI extends JFrame implements ActionListener {
         setLocation(100, 100);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new FlowLayout(FlowLayout.LEFT));
-
-        inputMsg = new JTextField(10);
-
-        JButton sendBtn = new JButton("전송");
-        sendBtn.setActionCommand("send");
-        sendBtn.addActionListener(this);
-
-        JButton deleteBtn = new JButton("삭제");
-        deleteBtn.setActionCommand("delete");
-        deleteBtn.addActionListener(this);
 
         JPanel panel2 = new JPanel();
 
@@ -41,26 +33,42 @@ public class JDBCGUI extends JFrame implements ActionListener {
         JButton searchBtn = new JButton("검색");
         panel2.add(searchBtn);
 
-//        JTable table = new JTable(, searchItems);
-//        JScrollPane scrollPane = new JScrollPane(table);
+
+
+        JPanel panel3 = new JPanel();
+        DefaultTableModel dft = new DefaultTableModel(searchItems, 0);
+        JTable table = new JTable(dft);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        DAO dao = DAO.sharedInstance();
+
+        List<EMPLOYEE> list = dao.getList();
+        for (EMPLOYEE e : list) {
+            dft.addRow(e.toArray());
+//            System.out.println(Arrays.toString(e.toArray()));
+        }
+
+
+
+        panel3.add(scrollPane);
 
 
         add(panel2);
-//        add(scrollPane);
+        add(panel3);
 
         setVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String cmd = e.getActionCommand();
-        if (cmd.equals("send")) {
-            String msg = inputMsg.getText();
-            JOptionPane.showMessageDialog(this, msg);
-        } else if (cmd.equals("delete")) {
-            inputMsg.setText("");
-        }
-    }
+//    @Override
+//    public void actionPerformed(ActionEvent e) {
+//        String cmd = e.getActionCommand();
+//        if (cmd.equals("send")) {
+//            String msg = inputMsg.getText();
+//            JOptionPane.showMessageDialog(this, msg);
+//        } else if (cmd.equals("delete")) {
+//            inputMsg.setText("");
+//        }
+//    }
 
     public static void main(String args[]) {
         JDBCGUI gui = new JDBCGUI();

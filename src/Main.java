@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -9,7 +10,7 @@ public class Main {
 
         List<EMPLOYEE> list = dao.getList();
         for (EMPLOYEE e : list) {
-            System.out.println(e.toString());
+            System.out.println(Arrays.toString(e.toArray()));
         }
     }
 }
