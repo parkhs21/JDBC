@@ -3,9 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DAO {
-    private static final String url = "jdbc:mysql://localhost:3306/COMPANY";
+    private static final String url = "jdbc:mysql://localhost:3306/NewDB";
     private static final String user = "root";
-    private static final String password = "mypassword";
+    private static final String password = "#Gs13579";
 
     static {
         try {
@@ -25,7 +25,8 @@ public class DAO {
         return obj;
     }
 
-    private Connection conn;
+    //GUI 이벤트 리스너에서 connection을 사용해야 해서 private -> public 으로 바꿨습니다
+    public Connection conn;
     private Statement stmt;
     private ResultSet rs;
 
@@ -86,7 +87,7 @@ public class DAO {
             System.out.println("Statement 객체를 생성할 수 없습니다.");
             e.printStackTrace();
         } finally {
-            this.close();
+//            this.close();
         }
 
         return list;
