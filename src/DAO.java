@@ -3,9 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DAO {
-    private static final String url = "jdbc:mysql://localhost:3306/COMPANY";
+    private static final String url = "jdbc:mysql://localhost:3306/jdbc?serverTimezone=UTC";
     private static final String user = "root";
-    private static final String password = "mypassword";
+    private static final String password = "1234";
 
     static {
         try {
@@ -25,7 +25,7 @@ public class DAO {
         return obj;
     }
 
-    private Connection conn;
+    public Connection conn;
     private Statement stmt;
     private ResultSet rs;
 
