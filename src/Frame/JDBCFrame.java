@@ -35,7 +35,10 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
     private JCheckBox[] searchConditionDepartmentBoxes;
 
     // UI상 가로(행) 형태를 기준으로 묶어서 패널을 만들어 넣음
+    // DAO의 createView를 실행해 사용할 View를 만듦
     public JDBCFrame() {
+        dao.createView();
+
         setTitle("JDBC GUI");
         setSize(1200, 600);
         setLocation(200, 200);

@@ -67,6 +67,7 @@ public class DAO {
     // 따라서 뷰를 생성하고, 뷰를 통해 직원을 가져오는 것이 더 효율적이라 판단해서 사용하게 됐음.
     // 뷰 생성
     public void createView() {
+        this.dropView();
         // 원하는 형태의 뷰 생성 쿼리
         String createViewQuery = "CREATE VIEW emp_view " +
                 "as SELECT CONCAT(E1.Fname, ' ', E1.Minit, ' ', E1.Lname) AS Name, E1.Ssn, E1.Bdate, E1.Address, E1.Sex, " +
