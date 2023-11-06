@@ -1,3 +1,5 @@
+package Data;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -51,15 +53,18 @@ public class EMPLOYEE implements Serializable {
         return result;
     }
 
+    // Array로 반환하는 함수
+    // Array로 반환하여 JTable에 바로 넣을 수 있도록 함.
+    // String으로 보여지느 JTable에 맞춰, 다른 형태인 Date, double은 전처리 해줌.
     public String[] toArray() {
         String[] result = new String[8];
 
         result[0] = Name;
         result[1] = Ssn;
-        result[2] = Bdate.toString();
+        result[2] = (Bdate == null) ? null : Bdate.toString();
         result[3] = Address;
         result[4] = Sex;
-        result[5] = String.valueOf(Salary);
+        result[5] = (Salary == 0.0) ? null : String.valueOf(Salary);
         result[6] = Supervisor;
         result[7] = Department;
 
