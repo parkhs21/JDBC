@@ -263,6 +263,34 @@ public class DAO {
         return deleteRowNum;
     }
 
+    // PK인 Ssn 사용하여 직원 수정
+    // select와 다르게 employee에서 직접 수정됨.
+    // 직원 수정
+    public int updateEmployee(String Ssn, String ConditionLabel, String ConditionValue) {
+        int updateRowNum = 0;
+        String updateQuery = "UPDATE EMPLOYEE SET " + ConditionLabel + " = ? WHERE Ssn = ?";
+
+        if (!connect()) System.exit(0);
+
+        try {
+            pstmt = conn.prepareStatement(updateQuery);
+
+            pstmt.clearParameters();
+            pstmt.setString(1, ConditionValue);
+            pstmt.setString(2, Ssn);
+            updateRowNum += pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "PrepareStatement 연결할 수 없습니다.");
+            System.out.println("PrepareStatement 객체를 생성할 수 없습니다.");
+            e.printStackTrace();
+        } finally {
+            this.close();
+        }
+
+        return updateRowNum;
+    }
+
     // 부서 옵션에서 선택할 수 있는 값을 얻기 위함.
     // 부서 조회
     public List<String> selectDepartment() {

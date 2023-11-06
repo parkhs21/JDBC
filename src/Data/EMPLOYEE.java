@@ -1,7 +1,7 @@
 package Data;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 
 public class EMPLOYEE implements Serializable {
     private String Name;
@@ -12,6 +12,8 @@ public class EMPLOYEE implements Serializable {
     private double Salary;
     private String Supervisor;
     private String Department;
+
+    private String BdateString;
 
     public EMPLOYEE() {
         super();
@@ -36,6 +38,9 @@ public class EMPLOYEE implements Serializable {
     public void setSalary(double Salary) { this.Salary = Salary; }
     public void setSupervisor(String Supervisor) { this.Supervisor = Supervisor; }
     public void setDepartment(String Department) { this.Department = Department; }
+    public void setBdateString(String BdateString) { this.BdateString = BdateString; }
+
+    public String getSsn() { return this.Ssn; };
 
     @Override
     public String toString() {
@@ -67,6 +72,22 @@ public class EMPLOYEE implements Serializable {
         result[5] = (Salary == 0.0) ? null : String.valueOf(Salary);
         result[6] = Supervisor;
         result[7] = Department;
+
+        return result;
+    }
+
+    // EMPLOYEE 객체를 비교하여 다른 부분을 String[]로 반환하는 함수
+    public String[] diff(EMPLOYEE emp) {
+        String[] result = new String[8];
+
+        result[0] = null;
+        result[1] = null;
+        result[2] = (Bdate.equals(emp.Bdate)) ? null :  Bdate.toString();
+        result[3] = (Address.equals(emp.Address)) ? null : Address;
+        result[4] = (Sex.equals(emp.Sex)) ? null : Sex;
+        result[5] = (Salary == emp.Salary) ? null : String.valueOf(Salary);
+        result[6] = null;
+        result[7] = null;
 
         return result;
     }

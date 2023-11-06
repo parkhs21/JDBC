@@ -6,7 +6,9 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 
 // 메인 화면
@@ -23,7 +25,7 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
     private TableColumn[] tableColumn = new TableColumn[defaultItems.length];
     private DefaultTableModel tableModel;
     private TableColumnModel tableColumnModel;
-    private List<String> selectedEmployeeSsn = new ArrayList<>();
+    private List<EMPLOYEE> selectedEmployees = new ArrayList<>();
 
     private DAO dao = DAO.sharedInstance();
 
@@ -285,10 +287,11 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
     }
 
     // 버튼이 수행되면 각 기능을 실행함
-    // 검색 버튼의 경우 repaint를 통해 화면의 테이블을 갱신함. 검색 조건은 repaint에서 각 값들을 확인함
-    // 직원 수정의 경우 추후 개발할 내용임
-    // 직원 추가의 경우 InsertDialog를 통해 새로운 창을 띄우고 값을 입력받음
-    // 직원 삭제의 경우 선택된 직원의 Ssn을 통해 삭제함
+    // 검색 버튼의 경우, repaint를 통해 화면의 테이블을 갱신함. 검색 조건은 repaint에서 각 값들을 확인함
+    // 직원 수정의 경우, 선택된 직원의 정보를 기존 데이터베이스의 정보와 비교하여 수정함.
+    //               수정할 내용이 있을 경우, 알림 창을 통해 수정할 내용들을 보여주고 수정할 것인지 물어봄
+    // 직원 추가의 경우, InsertDialog를 통해 새로운 창을 띄우고 값을 입력받음
+    // 직원 삭제의 경우, 선택된 직원의 Ssn을 통해 삭제함
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -297,13 +300,60 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
                 repaint();
                 break;
             case "직원 수정":
+                if (searchCheckBoxes[1].isSelected()) {
+                    String diffStr = "";
+                    int confirmResult = 2;
+                    List<String[]> selectedEmployeesdiff = new ArrayList<>();
+
+                    List<EMPLOYEE> list = dao.selectEmployee(defaultItems);
+                    for (EMPLOYEE emp : selectedEmployees)
+                        for (EMPLOYEE emp2 : list)
+                            if (emp.getSsn().equals(emp2.getSsn())) selectedEmployeesdiff.add(emp.diff(emp2));
+
+                    for (int i = 0; i < selectedEmployees.size(); i++) {
+                        String temp = "";
+                        String[] diffs = selectedEmployeesdiff.get(i);
+                        for (int j = 0; j < 8; j++)
+                            if (diffs[j] != null)
+                                temp += ", " + defaultItems[j] + "->" + diffs[j];
+
+                        if (temp.isEmpty()) continue;
+
+                        if (diffStr.isEmpty()) {
+                            diffStr = "변경된 직원 정보 입니다. 수정하시겠습니까?\n";
+                            diffStr += "원하는 정보가 선택되지 않았을 경우 아래 선택된 직원 정보를 확인해주세요.\n";
+                            diffStr += "(Name, Ssn, Supervisor, Department는 현재 지원되지 않습니다.)\n";
+                            diffStr += "Ssn:" + selectedEmployees.get(i).getSsn() + " : " + temp.substring(2);
+                        }
+                        else diffStr += "\nSsn:" + selectedEmployees.get(i).getSsn() + " : " + temp.substring(2);
+                    }
+
+                    if (!diffStr.isEmpty())
+                        confirmResult = JOptionPane.showConfirmDialog(this, diffStr, "직원 수정", JOptionPane.OK_CANCEL_OPTION);
+
+                    if (confirmResult == 0) {
+                        for (int i = 0; i < selectedEmployees.size(); i++) {
+                            String updateSsn = selectedEmployees.get(i).getSsn();
+                            String[] diffs = selectedEmployeesdiff.get(i);
+                            for (int j = 0; j < 8; j++)
+                                if (diffs[j] != null)
+                                    dao.updateEmployee(updateSsn, defaultItems[j], diffs[j]);
+                        }
+                    }
+                    repaint();
+                } else {
+                    JOptionPane.showMessageDialog(this, "직원 정보를 수정하려면, Ssn 열이 선택되어야 합니다.");
+                }
                 break;
             case "직원 추가":
                 new InsertDialog(this);
                 break;
             case "직원 삭제":
                 if (searchCheckBoxes[1].isSelected()) {
-                    dao.deleteEmployee(selectedEmployeeSsn.toArray(new String[selectedEmployeeSsn.size()]));
+                    String[] deleteSsns = new String[selectedEmployees.size()];
+                    for (EMPLOYEE emp : selectedEmployees)
+                        deleteSsns[selectedEmployees.indexOf(emp)] = emp.getSsn();
+                    dao.deleteEmployee(deleteSsns);
                     repaint();
                 } else {
                     JOptionPane.showMessageDialog(this, "직원 정보를 삭제하려면, Ssn 열이 선택되어야 합니다.");
@@ -335,22 +385,33 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
     }
 
     // 마우스 클릭을 통해 테이블에서 선택된 것을 조작해줌
-    // 선택된 직원의 이름을 보여줌
-    // 다중 선택이 됨에 따라 추가로 선택된 직원의 이름을 보여줌
+    // 선택된 직원의 이름을 보여줌. 다중 선택이 됨에 따라 추가로 선택된 직원의 이름을 보여줌
+    // 또한, 선택된 직원 정보를 저장하여 수정, 삭제할 때 사용함
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
         String selectedList = "";
         int[] rows = ((JTable) e.getSource()).getSelectedRows();
-        selectedEmployeeSsn.clear();
-        for (int row : rows) {
+        selectedEmployees.clear();
+        for (int row: rows) {
             selectedList += ",  " + ((String) tableModel.getValueAt(row, 0));
-            selectedEmployeeSsn.add((String) tableModel.getValueAt(row, 1));
+            EMPLOYEE emp = new EMPLOYEE();
+
+//            emp.setName((String) tableModel.getValueAt(row, 0));
+            emp.setSsn((String) tableModel.getValueAt(row, 1));
+            emp.setBdate(Date.valueOf((String) tableModel.getValueAt(row, 2)));
+            emp.setAddress((String) tableModel.getValueAt(row, 3));
+            emp.setSex((String) tableModel.getValueAt(row, 4));
+            emp.setSalary(Double.parseDouble((String) tableModel.getValueAt(row, 5)));
+//            emp.setSupervisor((String) tableModel.getValueAt(row, 6));
+//            emp.setDepartment((String) tableModel.getValueAt(row, 7));
+
+            selectedEmployees.add(emp);
         }
         selectedEmployeeNames.setText(selectedList.substring(3));
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
     }
 
     @Override
