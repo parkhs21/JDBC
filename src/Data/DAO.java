@@ -207,7 +207,7 @@ public class DAO {
 
     // select와 다르게 employee에 직접 추가됨.
     // 직원 추가
-    public int insertEmployee(String[] info) {
+    public int insertEmployee(String[] info) throws SQLException {
         int insertRowNum = 0;
         String insertQuery = "INSERT INTO EMPLOYEE (FName, Minit, Lname, Ssn, Bdate, Address, Sex, Salary, Super_ssn, Dno) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -224,9 +224,9 @@ public class DAO {
 
             insertRowNum = pstmt.executeUpdate();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "PrepareStatement 연결할 수 없습니다.");
             System.out.println("PrepareStatement 객체를 생성할 수 없습니다.");
             e.printStackTrace();
+            throw e;
         } finally {
             this.close();
         }
@@ -266,7 +266,7 @@ public class DAO {
     // PK인 Ssn 사용하여 직원 수정
     // select와 다르게 employee에서 직접 수정됨.
     // 직원 수정
-    public int updateEmployee(String Ssn, String ConditionLabel, String ConditionValue) {
+    public int updateEmployee(String Ssn, String ConditionLabel, String ConditionValue) throws SQLException {
         int updateRowNum = 0;
         String updateQuery = "UPDATE EMPLOYEE SET " + ConditionLabel + " = ? WHERE Ssn = ?";
 
@@ -281,9 +281,9 @@ public class DAO {
             updateRowNum += pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "PrepareStatement 연결할 수 없습니다.");
             System.out.println("PrepareStatement 객체를 생성할 수 없습니다.");
             e.printStackTrace();
+            throw e;
         } finally {
             this.close();
         }

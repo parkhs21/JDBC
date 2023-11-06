@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.sql.Date;
@@ -331,14 +332,18 @@ public class JDBCFrame extends JFrame implements ActionListener, ItemListener, M
                     if (!diffStr.isEmpty())
                         confirmResult = JOptionPane.showConfirmDialog(this, diffStr, "직원 수정", JOptionPane.OK_CANCEL_OPTION);
 
-                    if (confirmResult == 0) {
-                        for (int i = 0; i < selectedEmployees.size(); i++) {
-                            String updateSsn = selectedEmployees.get(i).getSsn();
-                            String[] diffs = selectedEmployeesdiff.get(i);
-                            for (int j = 0; j < 8; j++)
-                                if (diffs[j] != null)
-                                    dao.updateEmployee(updateSsn, defaultItems[j], diffs[j]);
+                    try {
+                        if (confirmResult == 0) {
+                            for (int i = 0; i < selectedEmployees.size(); i++) {
+                                String updateSsn = selectedEmployees.get(i).getSsn();
+                                String[] diffs = selectedEmployeesdiff.get(i);
+                                for (int j = 0; j < 8; j++)
+                                    if (diffs[j] != null)
+                                        dao.updateEmployee(updateSsn, defaultItems[j], diffs[j]);
+                            }
                         }
+                    } catch (SQLException exception) {
+                        JOptionPane.showMessageDialog(this, exception.getMessage());
                     }
                     repaint();
                 } else {

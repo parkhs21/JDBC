@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,8 @@ public class InsertDialog extends JDialog implements ActionListener {
 
     // 값을 입력 후, 직원 추가 버튼을 누르면
     // DAO의 insertEmployee 함수를 통해 직원이 추가됨.
+    // 추가 후, 부모 Frame을 reload 시켜줌.
+    // 만약, 유효하지 않는 값이 입력되면 에러를 발생하고, 에러 메시지를 띄워줌.
     @Override
     public void actionPerformed(ActionEvent e) {
         String[] info = new String[10];
@@ -96,12 +99,15 @@ public class InsertDialog extends JDialog implements ActionListener {
                 info[i] = selectedItem.substring(0, selectedItem.indexOf(" "));
             } else {
                 info[i] = textFields[i].getText();
-                textFields[i].setText("");
             }
         }
 
-        dao.insertEmployee(info);
-        parentFrame.repaint();
-        dispose();
+        try {
+            dao.insertEmployee(info);
+            parentFrame.repaint();
+            dispose();
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this, exception.getMessage());
+        }
     }
 }
